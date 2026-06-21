@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Experimenter — B&W Multi-pane UI</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #B6CDB6;
+      --text: #271622;
+      --text-rgb: 39, 22, 34;
+      --border: 1.5px solid var(--text);
+      --border-light: 1px solid rgba(var(--text-rgb), 0.2);
+      --gray-bg: #B6CDB6;
+      --font-sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-size: 11px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Custom Scrollbar for B&W aesthetic */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text);
+      border-radius: 4px;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* NAV */
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--bg);
+      border-bottom: var(--border);
+      padding: 0 20px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 32px;
+      letter-spacing: .02em;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text);
+      border: 1.5px solid transparent;
+      background: transparent;
+      transition: all .15s;
+    }
+
+    .nav-tab:hover {
+      border: var(--border);
+    }
+
+    .nav-tab.active {
+      background: var(--text);
+      color: var(--bg);
+      border: var(--border);
+    }
+
+    .nav-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--text);
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--bg);
+    }
+
+    /* SCREENS */
+    .screen {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .section-head {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text);
+      opacity: .4;
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: var(--border);
+      color: var(--text);
+      background: var(--bg);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .pill:hover {
+      background: var(--gray-bg);
+    }
+
+    .pill-fill,
+    .pill.selected {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .pill-fill:hover,
+    .pill.selected:hover {
+      background: rgba(var(--text-rgb), 0.8);
+    }
+
+    .badge-outline {
+      display: inline-block;
+      font-size: 8px;
+      padding: 2px 6px;
+      border: var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .badge-fill {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .badge-dashed {
+      border-style: dashed;
+    }
+
+    /* Lab-token styling: variable/metric IDs shown as monospace chips (Protocol Spec). */
+    .var-chip {
+      display: inline-block;
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-size: 9px;
+      padding: 2px 6px;
+      border: var(--border);
+      border-radius: 4px;
+      background: var(--bg);
+      margin: 2px 2px 2px 0;
+    }
+
+    .spec-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      opacity: .5;
+      margin: 8px 0 4px;
+    }
+
+    .thr-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .thr-op {
+      font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+      font-weight: 600;
+    }
+
+    /* Variable-triad mini-diagram: independent var -> dependent metrics. */
+    .triad {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .triad-node {
+      text-align: center;
+    }
+
+    .triad-cap {
+      font-size: 7px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      opacity: .5;
+      margin-top: 3px;
+    }
+
+    .triad-arrow {
+      font-family: monospace;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: .6;
+    }
+
+    /* Faint graph-paper grid behind the conversation/journal feeds for a lab-notebook feel. */
+    .chat-messages,
+    .log-feed {
+      background-image:
+        linear-gradient(rgba(var(--text-rgb), 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--text-rgb), 0.045) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .prog-bg {
+      background: var(--gray-bg);
+      border-radius: 20px;
+      height: 6px;
+      overflow: hidden;
+      border: var(--border);
+      margin-bottom: 6px;
+    }
+
+    .prog-fill {
+      height: 100%;
+      background: var(--text);
+      border-radius: 20px;
+      border-right: var(--border);
+    }
+
+    .card-box {
+      border: var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      background: var(--bg);
+    }
+
+    .sidebar,
+    .exp-left {
+      width: 260px;
+      flex-shrink: 0;
+      border-right: var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .panel-header {
+      padding: 16px 16px 12px;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .exp-card {
+      padding: 12px;
+      border-radius: 10px;
+      border: var(--border);
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all .15s;
+      background: var(--bg);
+    }
+
+    .exp-card:hover {
+      background: var(--gray-bg);
+    }
+
+    .exp-card.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .exp-card-name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .exp-card-meta {
+      font-size: 10px;
+      opacity: .7;
+      line-height: 1.4;
+    }
+
+    /* Status adjustments for Active Card vs Inactive */
+    .exp-card.active .badge-outline {
+      border-color: var(--bg);
+      color: var(--bg);
+    }
+
+    .exp-card.active .badge-fill {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .chat-area,
+    .exp-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: var(--border);
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .main-header {
+      padding: 16px 20px;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .main-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .main-sub {
+      font-size: 11px;
+      color: var(--text);
+      opacity: .5;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+    }
+
+    .msg.user {
+      flex-direction: row-reverse;
+      align-self: flex-end;
+    }
+
+    .msg-avatar {
+      width: 24px;
+      height: 24px;
+      border: var(--border);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 600;
+      background: var(--bg);
+    }
+
+    .msg-avatar.agent {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .msg-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text);
+      opacity: .5;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .msg.user .msg-label {
+      text-align: right;
+    }
+
+    .chat-bubble {
+      border: var(--border);
+      border-radius: 12px;
+      border-bottom-left-radius: 2px;
+      padding: 10px 14px;
+      font-size: 11px;
+      line-height: 1.5;
+      background: var(--bg);
+    }
+
+    .msg.user .chat-bubble {
+      background: var(--text);
+      color: var(--bg);
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 2px;
+    }
+
+    .choice-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .input-row {
+      padding: 16px 20px;
+      border-top: var(--border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: var(--bg);
+    }
+
+    .input-field {
+      flex: 1;
+      background: var(--bg);
+      border: var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 11px;
+      resize: none;
+      min-height: 40px;
+    }
+
+    .input-field::placeholder {
+      color: var(--text);
+      opacity: .4;
+    }
+
+    .input-field:focus {
+      outline: none;
+      box-shadow: 2px 2px 0 var(--text);
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--text);
+      border: var(--border);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: rgba(var(--text-rgb), 0.8);
+    }
+
+    .setup-right,
+    .exp-right {
+      width: 300px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .panel-section {
+      border-bottom: var(--border);
+      padding: 16px;
+    }
+
+    .panel-section:last-child {
+      border-bottom: none;
+    }
+
+    .sub-exp-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sub-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: var(--border);
+      flex-shrink: 0;
+    }
+
+    .sub-dot.filled {
+      background: var(--text);
+    }
+
+    .sub-exp-name {
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .sub-exp-day {
+      font-size: 9px;
+      opacity: .5;
+      margin-top: 2px;
+    }
+
+    .agent-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .agent-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .agent-name {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .agent-role {
+      font-size: 9px;
+      opacity: .6;
+      margin-top: 2px;
+    }
+
+    .source-add-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .source-input {
+      flex: 1;
+      border: var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 10px;
+    }
+
+    .source-input:focus {
+      outline: none;
+      box-shadow: 1.5px 1.5px 0 var(--text);
+    }
+
+    .source-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: var(--border);
+      font-size: 10px;
+      font-weight: 500;
+      margin: 0 4px 6px 0;
+    }
+
+    .log-feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 16px;
+    }
+
+    .log-date {
+      font-size: 10px;
+      font-weight: 600;
+      opacity: .4;
+      width: 45px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .log-content {
+      flex: 1;
+      border: var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: var(--bg);
+    }
+
+    .log-type {
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .log-text {
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .log-images {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .log-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      border: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-bg);
+      cursor: pointer;
+    }
+
+    .log-img.filled {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .flag-box {
+      border: var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      background: var(--gray-bg);
+      margin-bottom: 8px;
+    }
+
+    .flag-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--text);
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .flag-title {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .flag-desc {
+      font-size: 10px;
+      opacity: .7;
+      line-height: 1.4;
+    }
+
+    .log-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .log-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: var(--border);
+      background: var(--bg);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .log-action-btn:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .resource-item {
+      padding: 12px 0;
+      border-bottom: var(--border-light);
+      cursor: pointer;
+    }
+
+    .resource-item:last-child {
+      border-bottom: none;
+    }
+
+    .resource-title {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .resource-source {
+      font-size: 10px;
+      opacity: .6;
+    }
+
+    .resource-used {
+      font-size: 9px;
+      font-weight: 600;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .resource-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text);
+      border: 1px solid var(--text);
+    }
+
+    .resource-dot.empty {
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+
+    <nav class="nav">
+      <div class="nav-logo">
+        <div class="logo-dot"></div>
+        THE EXPERIMENTER
+      </div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showScreen('setup')">Setup</button>
+        <button class="nav-tab" onclick="showScreen('experiment')">Experiment</button>
+      </div>
+      <div class="nav-right">
+        <button class="icon-btn" onclick="cycleTheme()" aria-label="change theme" title="Switch Theme"><i
+            class="ti ti-palette"></i></button>
+        <button class="icon-btn" aria-label="settings"><i class="ti ti-settings"></i></button>
+        <div class="avatar">AK</div>
+      </div>
+    </nav>
+
+    <div class="setup-screen screen active" id="screen-setup">
+      <div class="sidebar">
+        <div class="panel-header">
+          <span class="section-head" style="margin:0;">Experiments</span>
+          <button class="icon-btn" style="width:24px; height:24px; font-size:12px;" title="New experiment" onclick="newExperiment()"><i class="ti ti-plus"></i></button>
+        </div>
+        <div class="scroll-area">
+          <!-- Experiment list is rendered from the real experiments in Redis (no mock data);
+               the dashed card starts a brand-new, empty experiment. -->
+          <div id="expList"></div>
+          <div class="exp-card" onclick="newExperiment()"
+            style="border-style: dashed; display:flex; align-items:center; gap:8px; opacity:0.6; background:transparent;">
+            <i class="ti ti-plus" style="font-size:14px;"></i>
+            <span style="font-size:11px; font-weight:600;">New experiment</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-area">
+        <div class="main-header">
+          <div>
+            <div class="main-title" id="setupMainTitle">New experiment</div>
+            <div class="main-sub" id="setupMainSub">Define your hypothesis and variables</div>
+          </div>
+        </div>
+
+        <!-- Config-card setup surface: instead of a chat transcript, each part of the
+             experiment is its own editable card the user clicks to configure. -->
+        <div style="flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:12px;">
+
+          <div class="card-box" id="card-hypothesis">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="section-head" style="margin:0;">Hypothesis</span>
+              <button class="icon-btn" style="width:24px; height:24px; font-size:12px;" title="Edit" onclick="editHypothesis()"><i class="ti ti-pencil"></i></button>
+            </div>
+            <div id="hypoView" style="font-size:12px; line-height:1.5; margin-top:8px;"></div>
+            <div id="hypoEdit" hidden style="margin-top:8px;">
+              <textarea id="hypoInput" class="input-field" rows="3" placeholder="e.g. Does a daily 10-minute walk improve my mood over 4 weeks?"></textarea>
+              <div style="display:flex; gap:6px; margin-top:8px; justify-content:flex-end;">
+                <button class="pill" onclick="cancelHypothesis()">Cancel</button>
+                <button class="pill selected" onclick="saveHypothesis()">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box" id="card-watch">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span class="section-head" style="margin:0;">Watch for</span>
+              <button class="icon-btn" style="width:24px; height:24px; font-size:12px;" title="Define what you track" onclick="editWatch()"><i class="ti ti-pencil"></i></button>
+            </div>
+            <div id="watchView" style="margin-top:8px;"></div>
+            <div id="watchEdit" hidden style="margin-top:8px;">
+              <label style="font-size:10px; opacity:.6; display:block; margin-bottom:4px;">What do you want to monitor? <span style="opacity:.6;">(the input you change)</span></label>
+              <textarea id="watchIndependent" class="input-field" rows="1" placeholder="e.g. daily walk"></textarea>
+              <label style="font-size:10px; opacity:.6; display:block; margin:10px 0 4px;">What result do you want? <span style="opacity:.6;">(the outcome you measure)</span></label>
+              <textarea id="watchDependent" class="input-field" rows="1" placeholder="e.g. mood"></textarea>
+              <div style="display:flex; gap:6px; margin-top:8px; justify-content:flex-end;">
+                <button class="pill" onclick="cancelWatch()">Cancel</button>
+                <button class="pill selected" onclick="saveWatch()">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <span class="section-head" style="margin:0;">Tracking window</span>
+            <div class="choice-pills" id="windowPills">
+              <button class="pill" onclick="selectWindow(this)">28-day</button>
+              <button class="pill selected" onclick="selectWindow(this)">28-day × 3</button>
+              <button class="pill" onclick="selectWindow(this)">Custom</button>
+            </div>
+          </div>
+
+          <div class="card-box">
+            <span class="section-head" style="margin:0;">Committee</span>
+            <div class="choice-pills" id="committeePills">
+              <button class="pill selected" onclick="togglePill(this)">Env. agent</button>
+              <button class="pill selected" onclick="togglePill(this)">Camera agent</button>
+              <button class="pill selected" onclick="togglePill(this)">De-escalator</button>
+              <button class="pill" onclick="togglePill(this)">Sleep agent</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="input-row" style="justify-content:space-between; align-items:center;">
+          <span id="compileFeedback" style="font-size:11px; opacity:.6;"></span>
+          <button class="send-btn" id="compileBtn" onclick="compileProtocol()" style="width:auto; padding:0 16px; gap:6px; font-size:11px; font-weight:600;">
+            <i class="ti ti-cpu"></i> Compile protocol
+          </button>
+        </div>
+      </div>
+
+      <div class="setup-right">
+        <div class="panel-section">
+          <div class="section-head">Compiled Protocol
+            <span class="badge-outline badge-fill" id="specStatus" style="margin-left:6px;">compiling…</span>
+          </div>
+          <div class="card-box" id="protocolSpec">
+            <div style="opacity:.5; font-size:10px;">Loading protocol…</div>
+          </div>
+        </div>
+
+        <div class="panel-section" style="flex:1;">
+          <div class="section-head">Research sources</div>
+          <div style="margin-bottom:12px;" id="setupSources">
+            <div class="source-tag" style="opacity:.5;"><i class="ti ti-search" style="font-size:12px;"></i> Compile to pull academic sources</div>
+          </div>
+          <div class="source-add-row">
+            <input class="source-input" type="text" placeholder="Paste link or paper...">
+            <button class="icon-btn" style="width:28px; height:28px;"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exp-screen screen" id="screen-experiment">
+      <div class="exp-left">
+        <div class="panel-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+          <div class="main-title" id="expLeftTitle">Experiment</div>
+          <div class="main-sub" id="expLeftSub">Compile a protocol to begin</div>
+        </div>
+        <div class="scroll-area">
+          <!-- Same real experiment list as the setup sidebar, so you can switch experiments
+               from here too. No mock sub-experiments. -->
+          <div id="expListExp"></div>
+        </div>
+      </div>
+
+      <div class="exp-main">
+        <div class="main-header">
+          <div>
+            <div class="main-title" id="expTitle">Experiment journal</div>
+            <div class="main-sub" id="expSub">No entries yet</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button class="log-action-btn" id="traceBtn"><i class="ti ti-timeline-event" style="font-size:14px;"></i> Trace</button>
+            <span class="badge-outline badge-fill" style="padding: 4px 8px;">Active</span>
+          </div>
+        </div>
+
+        <div class="log-feed" id="logFeed">
+          <div style="opacity:.5; font-size:11px; padding:8px;">No entries yet. Add your first daily entry below to start this experiment.</div>
+        </div>
+
+        <div class="input-row" style="flex-direction: column; align-items: stretch; gap: 10px;">
+          <div style="display:flex; gap:10px;">
+            <textarea class="input-field" placeholder="Add a journal note, observation, or check-in…" rows="2"
+              style="height:60px;"></textarea>
+            <button class="send-btn" style="height:60px; width:48px;"><i class="ti ti-arrow-up"></i></button>
+          </div>
+          <div class="log-actions" style="margin-top:0;">
+            <button class="log-action-btn"><i class="ti ti-camera" style="font-size:14px;"></i> Photo</button>
+            <button class="log-action-btn"><i class="ti ti-file" style="font-size:14px;"></i> Attach</button>
+            <button class="log-action-btn" style="background:var(--text); color:var(--bg);"><i class="ti ti-wand"
+                style="font-size:14px;"></i> Ask committee</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-right">
+        <div class="panel-header">
+          <span class="section-head" style="margin:0;">Research sources</span>
+          <button class="icon-btn" style="width:24px; height:24px; font-size:12px;"><i class="ti ti-plus"></i></button>
+        </div>
+        <div class="scroll-area" style="padding: 0 16px;">
+          <div class="resource-item" style="opacity:.5;">
+            <div class="resource-title">No sources yet</div>
+            <div class="resource-source">Use “Ask committee” to pull academic sources for this experiment.</div>
+          </div>
+        </div>
+        <div style="padding: 16px; border-top: var(--border);">
+          <div class="source-add-row" style="margin-top:0;">
+            <input class="source-input" type="text" placeholder="Add paper or link…">
+            <button class="icon-btn" style="width:28px; height:28px;"><i class="ti ti-plus"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+      if (name === 'setup') {
+        document.getElementById('screen-setup').classList.add('active');
+        document.querySelectorAll('.nav-tab')[0].classList.add('active');
+      } else {
+        document.getElementById('screen-experiment').classList.add('active');
+        document.querySelectorAll('.nav-tab')[1].classList.add('active');
+        // Pull the live experiment + its logs every time the tab opens, so the journal
+        // reflects the compiled setup (and any entries added so far) rather than mock data.
+        if (typeof loadExperimentPage === 'function') loadExperimentPage();
+      }
+    }
+
+    function selectExp(el) {
+      document.querySelectorAll('.sidebar .exp-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function selectSub(el) {
+      document.querySelectorAll('.exp-left .exp-card').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function togglePill(el) {
+      el.classList.toggle('selected');
+    }
+
+    // Hypothesis card: the text is held in hypoText (so an empty card shows a muted hint
+    // without that hint being mistaken for the hypothesis). The pencil opens a textarea;
+    // Save stores the typed text.
+    let hypoText = '';
+    function renderHypo() {
+      document.getElementById('hypoView').innerHTML = hypoText
+        ? hypoText
+        : '<span style="opacity:.45;">No hypothesis yet — click the pencil to add one.</span>';
+    }
+    function editHypothesis() {
+      document.getElementById('hypoView').hidden = true;
+      document.getElementById('hypoEdit').hidden = false;
+      document.getElementById('hypoInput').value = hypoText;
+      document.getElementById('hypoInput').focus();
+    }
+    function cancelHypothesis() {
+      document.getElementById('hypoEdit').hidden = true;
+      document.getElementById('hypoView').hidden = false;
+    }
+    function saveHypothesis() {
+      hypoText = document.getElementById('hypoInput').value.trim();
+      renderHypo();
+      cancelHypothesis();
+    }
+    renderHypo();
+
+    // Watch-for editor: the user names what they monitor (the input they change -> the
+    // independent variable) and the result they want (the outcome they measure -> the
+    // dependent variable). Comma-separated values allow more than one of each.
+    let watchState = { independent: [], dependent: [] };
+
+    function renderWatch() {
+      const view = document.getElementById('watchView');
+      const chip = (t, cls) => `<span class="pill ${cls}" style="cursor:default;">${t}</span>`;
+      const row = (label, items, cls) => `
+        <div style="font-size:9px; opacity:.5; margin-bottom:4px; text-transform:uppercase; letter-spacing:.08em;">${label}</div>
+        <div class="choice-pills" style="margin-top:0;">${items.length ? items.map(t => chip(t, cls)).join('') : '<span style="font-size:10px; opacity:.5;">not set</span>'}</div>`;
+      view.innerHTML = row('Monitor (input)', watchState.independent, 'selected') +
+        `<div style="height:8px;"></div>` + row('Result (outcome)', watchState.dependent, '');
+    }
+
+    function editWatch() {
+      document.getElementById('watchView').hidden = true;
+      document.getElementById('watchEdit').hidden = false;
+      document.getElementById('watchIndependent').value = watchState.independent.join(', ');
+      document.getElementById('watchDependent').value = watchState.dependent.join(', ');
+      document.getElementById('watchIndependent').focus();
+    }
+    function cancelWatch() {
+      document.getElementById('watchEdit').hidden = true;
+      document.getElementById('watchView').hidden = false;
+    }
+    function parseList(s) { return s.split(',').map(x => x.trim()).filter(Boolean); }
+    function saveWatch() {
+      watchState.independent = parseList(document.getElementById('watchIndependent').value);
+      watchState.dependent = parseList(document.getElementById('watchDependent').value);
+      renderWatch();
+      cancelWatch();
+    }
+    renderWatch();
+
+    // Tracking window is single-choice (radio-like): selecting one pill clears its
+    // siblings.
+    function selectWindow(el) {
+      el.parentElement.querySelectorAll('.pill').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // Reads the labels of every selected pill inside a choice-pills group.
+    function selectedPills(containerId) {
+      return [...document.getElementById(containerId).querySelectorAll('.pill.selected')]
+        .map(p => p.textContent.trim());
+    }
+
+    // Compile protocol: gather every card's state into one transcript and POST it to the
+    // compiler endpoint, which builds the real ProtocolSchema and caches it. On success we
+    // redraw the right-hand spec panel; either way we surface inline feedback by the button.
+    async function compileProtocol() {
+      const fb = document.getElementById('compileFeedback');
+      const btn = document.getElementById('compileBtn');
+      const hypothesis = hypoText;
+      const independent = watchState.independent;   // what to monitor -> independent var
+      const dependent = watchState.dependent;       // result wanted   -> dependent var
+      const trackingWindow = selectedPills('windowPills')[0] || 'unspecified';
+      const committee = selectedPills('committeePills');
+
+      if (!hypothesis) { fb.textContent = 'Add a hypothesis before compiling.'; return; }
+
+      const transcript =
+        `Hypothesis: ${hypothesis}\n` +
+        `Independent variable (what I monitor / change): ${independent.length ? independent.join(', ') : 'unspecified'}\n` +
+        `Dependent variable (result I want to measure): ${dependent.length ? dependent.join(', ') : 'unspecified'}\n` +
+        `Tracking window: ${trackingWindow}\n` +
+        `Oversight committee: ${committee.length ? committee.join(', ') : 'none'}`;
+
+      btn.disabled = true;
+      fb.textContent = 'Compiling protocol…';
+      try {
+        // Send the hypothesis + the monitor/result fields as structured data: the backend
+        // maps monitor -> independent var and result -> dependent var, and grounds research
+        // on the hypothesis, so the right pane reflects what you typed.
+        const res = await fetch(`/api/experiments/${EXP_ID}/compile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript, hypothesis, independent, dependent })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+        fb.textContent = 'Compiled ✓';
+        loadProtocolSpec();              // redraws protocol + the rebuilt variable triad
+        renderSetupSources(data.research); // refreshes the Research sources panel
+        if (typeof loadExperimentList === 'function') loadExperimentList(); // new experiment now appears in the sidebar
+        // The experiment is now defined: open its (empty) journal page so the user can
+        // start logging daily entries against the setup they just compiled.
+        if (typeof showScreen === 'function') showScreen('experiment');
+      } catch (e) {
+        fb.textContent = 'Error: ' + e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Renders live research results into the Setup page's Research sources panel. Falls
+    // back to a friendly note when the researcher returned no cited sources.
+    function renderSetupSources(research) {
+      const panel = document.getElementById('setupSources');
+      if (!panel) return;
+      const sources = (research && research.sources) || [];
+      if (!sources.length) {
+        panel.innerHTML = '<div class="source-tag" style="opacity:.6;"><i class="ti ti-search" style="font-size:12px;"></i> No sources cited yet</div>';
+        return;
+      }
+      panel.innerHTML = sources.map(s => `
+        <div class="source-tag"><i class="ti ti-link" style="font-size:12px;"></i>
+          <a href="${s.url}" target="_blank" style="color:inherit; text-decoration:none;">${s.title || s.url}</a>
+        </div>`).join('');
+    }
+
+    const themes = [
+      { light: '#B6CDB6', dark: '#271622' },
+      { light: '#A3BCA3', dark: '#271622' }
+    ];
+    let currentThemeIndex = 0;
+
+    function hexToRgb(hex) {
+      const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+      const fullHex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+      return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '0, 0, 0';
+    }
+
+    function applyTheme(index) {
+      const theme = themes[index];
+      const root = document.documentElement;
+      root.style.setProperty('--bg', theme.light);
+      root.style.setProperty('--text', theme.dark);
+      root.style.setProperty('--gray-bg', theme.light);
+      root.style.setProperty('--text-rgb', hexToRgb(theme.dark));
+    }
+
+    function cycleTheme() {
+      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+      applyTheme(currentThemeIndex);
+      try {
+        localStorage.setItem('theme-index', currentThemeIndex);
+      } catch (e) { }
+    }
+
+    // Load saved theme on initialization
+    try {
+      const savedTheme = localStorage.getItem('theme-index');
+      if (savedTheme !== null) {
+        const parsed = parseInt(savedTheme, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed < themes.length) {
+          currentThemeIndex = parsed;
+          applyTheme(currentThemeIndex);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  </script>
+
+  <script>
+    // E3 wiring: connect the Experiment-screen journal input to the Master orchestrator.
+    // The active experiment id. Mutable: "New experiment" generates a fresh id and
+    // selecting a card in the sidebar switches it. All page fetches use this.
+    let EXP_ID = '';
+    const expMain = document.querySelector('.exp-main');
+    const logFeed = expMain ? expMain.querySelector('.log-feed') : null;
+    const journalInput = expMain ? expMain.querySelector('.input-field') : null;
+    const journalSend = expMain ? expMain.querySelector('.send-btn') : null;
+
+    function el(html) {
+      const t = document.createElement('template');
+      t.innerHTML = html.trim();
+      return t.content.firstChild;
+    }
+
+    // Formats a stored ISO timestamp as a short "Jun 21" date for the log feed.
+    function fmtLogDate(iso) {
+      try { return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+      catch (e) { return ''; }
+    }
+
+    // Renders one stored dailyLogEntry as a journal card. Prefers the raw chat transcript;
+    // falls back to the extracted metric payload when there's no free-text note. Milestone
+    // entries get the heavier bordered treatment.
+    function logEntryHtml(log) {
+      const text = log.chatTranscript || JSON.stringify(log.payload || {});
+      const ms = log.milestone ? ' style="border:2px solid var(--text); box-shadow:3px 3px 0 var(--text);"' : '';
+      return `
+        <div class="log-entry">
+          <div class="log-date">${fmtLogDate(log.dateTime)}</div>
+          <div class="log-content"${ms}>
+            <div class="log-type"><i class="ti ti-writing" style="font-size:12px;"></i> Journal note</div>
+            <div class="log-text">${text}</div>
+          </div>
+        </div>`;
+    }
+
+    // Loads the active experiment + its logs and paints the Experiment page: header titles
+    // from the compiled protocol/variables, and the journal feed from the stored entries
+    // (newest first). A freshly compiled experiment has no logs, so the feed shows an empty
+    // state and grows as daily entries are added.
+    async function loadExperimentPage() {
+      try {
+        const [exp, logs] = await Promise.all([
+          fetch(`/api/experiments/${EXP_ID}`).then(r => r.json()),
+          fetch(`/api/experiments/${EXP_ID}/logs`).then(r => r.json())
+        ]);
+        const title = (exp && !exp.error && exp.protocol) ? exp.protocol : 'Experiment journal';
+        const vt = (exp && exp.varTriad) || {};
+        const depKeys = Object.keys((vt.depVar || {}).properties || {});
+        const triadLine = vt.indVar ? `${vt.indVar.varId} → ${depKeys.join(', ') || '?'}` : 'Daily experiment journal';
+        const count = Array.isArray(logs) ? logs.length : 0;
+
+        const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+        set('expTitle', title);
+        set('expLeftTitle', title);
+        set('expLeftSub', triadLine);
+        set('expSub', count ? `${count} ${count === 1 ? 'entry' : 'entries'}` : 'No entries yet');
+
+        if (logFeed) {
+          logFeed.innerHTML = count
+            ? logs.map(logEntryHtml).reverse().join('')   // stored oldest-first -> show newest on top
+            : '<div style="opacity:.5; font-size:11px; padding:8px;">No entries yet. Add your first daily entry below to start this experiment.</div>';
+        }
+      } catch (e) { /* leave the existing feed in place on error */ }
+    }
+
+    async function submitJournal() {
+      const text = (journalInput.value || '').trim();
+      if (!text) return;
+      journalInput.value = '';
+      journalSend.disabled = true;
+      try {
+        const res = await fetch(`/api/experiments/${EXP_ID}/log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transcript: text })
+        });
+        renderTrace(text, await res.json());
+        if (typeof loadExperimentList === 'function') loadExperimentList(); // keep entry counts current
+      } catch (e) {
+        alert('Error: ' + e);
+      } finally {
+        journalSend.disabled = false;
+      }
+    }
+
+    // Removes the "no entries yet" placeholder the first time a real entry is added, so the
+    // empty-state text doesn't linger above the feed.
+    function clearLogPlaceholder() {
+      if (logFeed && !logFeed.querySelector('.log-entry') && !logFeed.querySelector('.flag-box')) logFeed.innerHTML = '';
+    }
+
+    function renderTrace(text, trace) {
+      clearLogPlaceholder();
+      const blocked = trace.verdict === 'blocked';
+      if (blocked) {
+        const steps = (trace.recoverySteps || []).map(s => `<li>${s}</li>`).join('');
+        logFeed.prepend(el(`
+          <div class="flag-box">
+            <div class="flag-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div>
+              <div class="flag-title">De-escalator triggered &mdash; write blocked</div>
+              <div class="flag-desc">${trace.deEscalationMessage || (trace.violations || []).join('; ')}</div>
+              <ul style="margin:8px 0 0 16px; font-size:10px;">${steps}</ul>
+            </div>
+          </div>`));
+      }
+      const verdictTag = trace.councilVerdict
+        ? `<span class="badge-outline ${blocked ? '' : 'badge-fill'}">${trace.councilVerdict}</span>` : '';
+      logFeed.prepend(el(`
+        <div class="log-entry">
+          <div class="log-date">now</div>
+          <div class="log-content" ${blocked ? 'style="border:2px solid var(--text); box-shadow:3px 3px 0 var(--text);"' : ''}>
+            <div class="log-type"><i class="ti ti-writing"></i> Journal &middot; ${trace.verdict} ${verdictTag}</div>
+            <div class="log-text">${text}</div>
+          </div>
+        </div>`));
+    }
+
+    if (journalSend) journalSend.addEventListener('click', submitJournal);
+
+    // E4: "Ask committee" -> live research (fills the sources panel) + compaction token
+    // savings, both shown together.
+    const askBtn = Array.from(document.querySelectorAll('.log-action-btn'))
+      .find(b => b.textContent.includes('Ask committee'));
+    const sourcesPanel = document.querySelector('.exp-right .scroll-area');
+
+    function safeHost(url) {
+      try { return new URL(url).hostname; } catch (e) { return url; }
+    }
+
+    async function askCommittee() {
+      const original = askBtn.innerHTML;
+      askBtn.disabled = true;
+      askBtn.innerHTML = '<i class="ti ti-loader"></i> Researching…';
+      try {
+        const [research, comp] = await Promise.all([
+          fetch(`/api/experiments/${EXP_ID}/research`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+          }).then(r => r.json()),
+          fetch(`/api/experiments/${EXP_ID}/compaction`).then(r => r.json())
+        ]);
+        if (sourcesPanel) {
+          sourcesPanel.innerHTML = (research.sources || []).map(s => `
+            <div class="resource-item">
+              <div class="resource-title"><a href="${s.url}" target="_blank" style="color:inherit; text-decoration:none;">${s.title || s.url}</a></div>
+              <div class="resource-source">${safeHost(s.url)}</div>
+              <div class="resource-used"><div class="resource-dot"></div>From live research</div>
+            </div>`).join('');
+        }
+        const pct = Math.round((comp.reductionRatio || 0) * 100);
+        clearLogPlaceholder();
+        logFeed.prepend(el(`
+          <div class="log-entry">
+            <div class="log-date">now</div>
+            <div class="log-content">
+              <div class="log-type"><i class="ti ti-wand"></i> Committee research</div>
+              <div class="log-text">${research.findings || ''}</div>
+              <div style="margin-top:8px; font-size:10px; opacity:.7;">Context compacted: ${comp.tokensBefore} &rarr; ${comp.tokensAfter} tokens (${pct}% saved)</div>
+            </div>
+          </div>`));
+      } catch (e) {
+        alert('Error: ' + e);
+      } finally {
+        askBtn.disabled = false;
+        askBtn.innerHTML = original;
+      }
+    }
+
+    if (askBtn) askBtn.addEventListener('click', askCommittee);
+
+    // E5: live Protocol Spec - fetch the compiled ProtocolSchema and render it as a lab
+    // spec sheet with monospace variable chips, instead of a chatbot transcript.
+    async function loadProtocolSpec() {
+      const box = document.getElementById('protocolSpec');
+      const status = document.getElementById('specStatus');
+      if (!box) return;
+      const chip = id => `<span class="var-chip">${id}</span>`;
+      try {
+        const [p, exp] = await Promise.all([
+          fetch(`/api/experiments/${EXP_ID}/protocol`).then(r => r.json()),
+          fetch(`/api/experiments/${EXP_ID}`).then(r => r.json())
+        ]);
+        if (p.error) { box.innerHTML = '<div style="opacity:.5; font-size:10px;">No protocol compiled yet.</div>'; status.textContent = 'none'; return; }
+
+        // Variable triad: independent var -> dependent metrics, with controls listed below.
+        const vt = (exp && exp.varTriad) || {};
+        const iv = vt.indVar;
+        const controls = vt.conVar || [];
+        const depKeys = Object.keys((vt.depVar || {}).properties || {});
+        const triad = iv ? `
+          <div class="triad">
+            <div class="triad-node">${chip(iv.varId)}<div class="triad-cap">independent</div></div>
+            <div class="triad-arrow">&rarr;</div>
+            <div class="triad-node">${(depKeys.length ? depKeys : ['?']).map(chip).join('')}<div class="triad-cap">dependent</div></div>
+          </div>
+          ${controls.length ? `<div style="font-size:9px; opacity:.7; margin-bottom:6px;">controls: ${controls.map(c => chip(c.varId)).join('')}</div>` : ''}` : '';
+
+        box.innerHTML = `
+          <div style="font-weight:600; margin-bottom:6px;">${p.protocol}</div>
+          ${triad}
+          <div class="thr-row"><span class="spec-label" style="margin:0;">Lockout</span> ${p.homeostasis_lockout_days}d</div>`;
+        status.textContent = 'compiled';
+      } catch (e) {
+        status.textContent = 'error';
+      }
+    }
+    // ---- Multi-experiment support -------------------------------------------------------
+    // The app holds many experiments; the sidebar lists the real ones from Redis, "New
+    // experiment" starts a blank one, and selecting a card loads it. No mock data anywhere:
+    // every card and every value comes from what the user actually created.
+
+    const prettyVar = id => (id || '').replace(/^v_/, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    // Blanks the setup cards for a fresh experiment (no leftover values from another one).
+    function clearSetupForm() {
+      hypoText = ''; renderHypo();
+      watchState = { independent: [], dependent: [] }; renderWatch();
+      const src = document.getElementById('setupSources');
+      if (src) src.innerHTML = '<div class="source-tag" style="opacity:.5;"><i class="ti ti-search" style="font-size:12px;"></i> Compile to pull academic sources</div>';
+    }
+
+    // Fills the setup cards + right-hand spec from the active experiment. A brand-new
+    // experiment (not yet in Redis) just shows the blank form.
+    async function initSetupCards() {
+      const titleEl = document.getElementById('setupMainTitle');
+      const subEl = document.getElementById('setupMainSub');
+      try {
+        const exp = await fetch(`/api/experiments/${EXP_ID}`).then(r => r.json());
+        if (!exp || exp.error) {
+          clearSetupForm();
+          if (titleEl) titleEl.textContent = 'New experiment';
+          if (subEl) subEl.textContent = 'Define your hypothesis and variables';
+          return;
+        }
+        hypoText = exp.protocol || ''; renderHypo();
+        const vt = exp.varTriad || {};
+        const ind = vt.indVar ? [vt.indVar.varName || prettyVar(vt.indVar.varId)] : [];
+        const dep = Object.keys((vt.depVar || {}).properties || {}).map(prettyVar);
+        watchState = { independent: ind, dependent: dep }; renderWatch();
+        if (titleEl) titleEl.textContent = exp.protocol || 'Experiment';
+        if (subEl) subEl.textContent = 'Edit your hypothesis and variables, then recompile';
+      } catch (e) { clearSetupForm(); }
+    }
+
+    // Renders the experiment list (from Redis) into both the setup sidebar and the
+    // experiment-page rail, highlighting the active one.
+    async function loadExperimentList() {
+      try {
+        const exps = await fetch('/api/experiments').then(r => r.json());
+        const card = e => `
+          <div class="exp-card ${e.expId === EXP_ID ? 'active' : ''}" onclick="selectExperiment('${e.expId}')">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+              <div style="min-width:0;">
+                <div class="exp-card-name">${e.protocol || e.expId}</div>
+                <div class="exp-card-meta">${e.logCount} ${e.logCount === 1 ? 'entry' : 'entries'}</div>
+              </div>
+              <button class="icon-btn" title="Delete experiment" style="width:22px; height:22px; font-size:11px; flex-shrink:0;"
+                onclick="event.stopPropagation(); deleteExperimentUI('${e.expId}')"><i class="ti ti-trash"></i></button>
+            </div>
+          </div>`;
+        const html = (Array.isArray(exps) && exps.length)
+          ? exps.map(card).join('')
+          : '<div style="opacity:.5; font-size:11px; padding:8px;">No experiments yet. Create one with “New experiment”.</div>';
+        ['expList', 'expListExp'].forEach(id => { const c = document.getElementById(id); if (c) c.innerHTML = html; });
+      } catch (e) { /* leave list as-is on error */ }
+    }
+
+    // Permanently deletes an experiment (header + logs + protocol) from either page, after a
+    // confirm. If the deleted one was active, falls back to another experiment or a fresh
+    // blank one.
+    async function deleteExperimentUI(id) {
+      if (!confirm('Delete this experiment and all of its logs? This cannot be undone.')) return;
+      try {
+        await fetch(`/api/experiments/${id}`, { method: 'DELETE' });
+      } catch (e) { alert('Error deleting: ' + e); return; }
+      if (id === EXP_ID) {
+        const exps = await fetch('/api/experiments').then(r => r.json()).catch(() => []);
+        if (Array.isArray(exps) && exps.length) { await selectExperiment(exps[0].expId); }
+        else { newExperiment(); }
+      } else {
+        await loadExperimentList();
+      }
+    }
+
+    // Switches the active experiment and reloads every view that depends on it.
+    async function selectExperiment(id) {
+      EXP_ID = id;
+      await loadExperimentList();   // refresh active highlight
+      await initSetupCards();       // setup cards + header
+      loadProtocolSpec();           // right-hand spec
+      loadExperimentPage();         // journal page (header + logs)
+    }
+
+    // Starts a brand-new, empty experiment: fresh id, blank cards, empty spec, on the setup
+    // screen so the user can define it. It appears in the sidebar once compiled.
+    function newExperiment() {
+      EXP_ID = 'exp_' + Date.now().toString(36);
+      clearSetupForm();
+      document.getElementById('setupMainTitle').textContent = 'New experiment';
+      document.getElementById('setupMainSub').textContent = 'Define your hypothesis and variables';
+      const spec = document.getElementById('protocolSpec');
+      const status = document.getElementById('specStatus');
+      if (spec) spec.innerHTML = '<div style="opacity:.5; font-size:10px;">No protocol compiled yet.</div>';
+      if (status) status.textContent = 'none';
+      loadExperimentList();
+      showScreen('setup');
+    }
+
+    // Boot: load the real experiment list; open the first one, or start a new blank one if
+    // there are none yet.
+    async function initApp() {
+      try {
+        const exps = await fetch('/api/experiments').then(r => r.json());
+        if (Array.isArray(exps) && exps.length) { await selectExperiment(exps[0].expId); }
+        else { newExperiment(); }
+      } catch (e) { newExperiment(); }
+    }
+    initApp();
+
+    // Trace panel: fetch this experiment's traces from Phoenix and show them in a modal.
+    const traceBtn = document.getElementById('traceBtn');
+    let traceWired = false;
+    function traceChip(id) { return `<span class="var-chip">${id}</span>`; }
+
+    async function openTraces() {
+      // Query the modal lazily: it sits after this script in the DOM, so it only exists
+      // by the time the button is actually clicked.
+      const traceModal = document.getElementById('traceModal');
+      const traceBody = document.getElementById('traceBody');
+      if (!traceWired) {
+        const traceClose = document.getElementById('traceClose');
+        if (traceClose) traceClose.addEventListener('click', () => traceModal.style.display = 'none');
+        traceModal.addEventListener('click', e => { if (e.target === traceModal) traceModal.style.display = 'none'; });
+        traceWired = true;
+      }
+      traceModal.style.display = 'flex';
+      traceBody.innerHTML = '<div style="opacity:.5; font-size:11px;">Loading traces…</div>';
+      try {
+        const traces = await fetch(`/api/experiments/${EXP_ID}/traces`).then(r => r.json());
+        if (!Array.isArray(traces) || !traces.length) {
+          traceBody.innerHTML = '<div style="opacity:.5; font-size:11px;">No traces yet — submit a journal entry first.</div>';
+          return;
+        }
+        traceBody.innerHTML = traces.map(t => `
+          <div class="card-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span class="spec-label" style="margin:0;">${(t.startTime || '').split('.')[0]}</span>
+              <span class="badge-outline ${t.verdict === 'blocked' ? '' : 'badge-fill'}">${t.verdict || ''}</span>
+            </div>
+            ${(t.spans || []).map(s => `
+              <div class="thr-row" style="justify-content:space-between;">
+                <span>${traceChip(s.name)}${s.councilVerdict ? ' · ' + s.councilVerdict : ''}</span>
+                <span class="thr-op">${s.latencyMs != null ? s.latencyMs + 'ms' : ''}</span>
+              </div>
+              ${s.detail ? `<div style="white-space:pre-wrap; font-size:10px; opacity:.75; margin:2px 0 10px 6px;">${s.detail}</div>` : ''}`).join('')}
+          </div>`).join('');
+      } catch (e) {
+        traceBody.innerHTML = '<div style="opacity:.5; font-size:11px;">Error loading traces.</div>';
+      }
+    }
+
+    if (traceBtn) traceBtn.addEventListener('click', openTraces);
+  </script>
+
+  <div id="traceModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center;">
+    <div style="background:var(--bg); border:var(--border); border-radius:12px; width:560px; max-height:80vh; overflow:auto; padding:20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="section-head" style="margin:0;">Trace Log · runTick → ingest / safety / council</div>
+        <button class="icon-btn" id="traceClose"><i class="ti ti-x"></i></button>
+      </div>
+      <div id="traceBody"></div>
+    </div>
+  </div>
+</body>
+
+</html>

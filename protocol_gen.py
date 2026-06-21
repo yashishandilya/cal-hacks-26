@@ -15,7 +15,6 @@ import store
 # One conflict rule expressed as a flat key/list pair. We ask the LLM for these as a
 # LIST because Gemini's structured output returns {} for an open {str: [str]} dict
 # (the same failure mode that left incompatibilities empty before); a list fills correctly.
-# In plain English: one "this clashes with these" rule, in a shape the AI can actually fill.
 class IncompatibilityRule(BaseModel):
     variableId: str
     clashesWith: List[str]
@@ -24,8 +23,6 @@ class IncompatibilityRule(BaseModel):
 # The model-facing draft of a protocol. Identical to ProtocolSchema except the
 # incompatibilities are a list of rules instead of an open dict; we convert it to a
 # real ProtocolSchema (dict-shaped) in code so the ValidationEngine is unaffected.
-# In plain English: the version of the protocol the AI fills in, which we then fold
-# back into the normal protocol shape the rest of the code expects.
 class ProtocolDraft(BaseModel):
     protocol: str
     homeostasis_lockout_days: int
@@ -36,8 +33,6 @@ class ProtocolDraft(BaseModel):
 # Forces a metricKey into a stable snake_case ID: lowercase, every run of non
 # alphanumeric characters collapsed to one underscore, and a 'v_' prefix guaranteed
 # (e.g. "clinical redness score" -> "v_clinical_redness_score").
-# In plain English: cleans up whatever phrase the AI used into one tidy, predictable
-# key name so the same metric is named the same way every time.
 def normalizeMetricKey(raw: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", raw.strip().lower()).strip("_")
     if not slug.startswith("v_"):
@@ -88,14 +83,10 @@ def generate_dynamic_protocol(userTranscript: str, experimentId: str) -> str:
 
     # Deterministic guard: re-normalize every metricKey in code so it is a stable v_ ID
     # no matter how the model phrased it, mirroring the prompt rule above.
-    # In plain English: even if the AI writes "clinical redness score", we rewrite it to
-    # v_clinical_redness_score so the key is predictable run to run.
     for threshold in draft.thresholds:
         threshold.metricKey = normalizeMetricKey(threshold.metricKey)
 
     # Fold the list of conflict rules back into the flat dict the ValidationEngine reads.
-    # In plain English: turn the AI's list of "clashes with" rules into the lookup
-    # table the safety checker expects.
     incompatibilities = {rule.variableId: rule.clashesWith for rule in draft.incompatibilities}
     protocol = ProtocolSchema(
         protocol=draft.protocol,
@@ -113,7 +104,6 @@ def generate_dynamic_protocol(userTranscript: str, experimentId: str) -> str:
 
     # Cache the compiled protocol in Redis under the experiment id so it can be
     # inspected directly (Redis Insight / CLI) and read sub-ms by later agents.
-    # In plain English: also drop a copy into the database so you can see it there.
     store.cacheProtocol(experimentId, protocolJson)
 
     print(f"[protocol_gen] Wrote protocol JSON + cached to Redis in {time.perf_counter() - startTime:.2f}s total")

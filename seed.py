@@ -27,15 +27,12 @@ experimentId = "exp_skin_999"
 
 # Tiny wrapper schema so Gemini's structured output returns one clean string field
 # instead of an open object (open dicts come back empty from Gemini, see runtime.py).
-# In plain English: a one-slot box for the AI to drop the made-up transcript into.
 class GeneratedTranscript(BaseModel):
     transcript: str
 
 
 # Asks Gemini to write a believable, messy daily-log chat message for the given
 # scenario, the kind of thing a real user would type into the app at night.
-# In plain English: makes the AI pretend to be a user writing about their day so we
-# have realistic test data instead of hand-written strings.
 def generateTranscript(scenario: str) -> str:
     load_dotenv()
     apiKey = os.getenv("GEMINI_API_KEY")
@@ -60,7 +57,6 @@ def generateTranscript(scenario: str) -> str:
 
 # Builds the in-memory test Experiment object for the skincare retinol study,
 # reusing the variable-triad models so the stored document matches real shape.
-# In plain English: assembles the fake experiment record we will save to Redis.
 def buildTestExperiment() -> Experiment:
     return Experiment(
         expId=experimentId,
@@ -79,8 +75,6 @@ def buildTestExperiment() -> Experiment:
 
 # Runs the full seed flow: persist experiment + cached protocol, generate a log,
 # ingest it into a TelemetryPacket, store the log, then read it all back from Redis.
-# In plain English: does the whole demo of putting a fake experiment into the
-# database, processing one day's note, and showing what came out.
 def main():
     print("=" * 60)
     print("SEEDING REDIS TEST DATABASE")

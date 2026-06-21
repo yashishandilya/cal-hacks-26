@@ -1,0 +1,13 @@
+{
+  "protocol": "pantry_optimization_experiment",
+  "homeostasis_lockout_days": 0,
+  "incompatibilities": {},
+  "thresholds": [
+    {
+      "metricKey": "ambient_humidity_pct",
+      "operator": "gt",
+      "limit": 65.0,
+      "errorMessage": "Humidity threshold ceiling crossed! Spore propagation vector risks accelerated decay."
+    }
+  ]
+}

@@ -6,7 +6,6 @@ class ValidationEngine:
     def __init__(self, rules: "Union[str, ProtocolSchema]"):
         # Accept either a path to a rules JSON file (read from disk) or an already-loaded
         # ProtocolSchema (used by the Master orchestrator, which holds the Redis-cached protocol).
-        # In plain English: you can hand this either a filename or the protocol object itself.
         if isinstance(rules, ProtocolSchema):
             self.rules = rules
         else:

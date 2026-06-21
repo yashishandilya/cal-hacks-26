@@ -1,0 +1,6 @@
+.env
+june.venv
+__pycache__/
+*.pyc
+MEMORY.md
+*.log

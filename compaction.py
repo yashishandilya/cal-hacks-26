@@ -24,8 +24,6 @@ geminiClient = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Counts tokens in a string using Gemini's own tokenizer (the same model family that
 # reads the context downstream), so the "tokens saved" figure reflects real LLM cost.
-# In plain English: ask Gemini how many tokens this text is, so our savings number is
-# honest instead of a guess.
 def countTokens(text: str) -> int:
     if not text:
         return 0
@@ -33,9 +31,6 @@ def countTokens(text: str) -> int:
     return result.total_tokens
 
 
-# Renders one log into the compact line an LLM would actually read: date, milestone
-# flag, the raw note, and the structured metrics.
-# In plain English: turns a stored log into one readable line for the context.
 def renderLog(log: dailyLogEntry) -> str:
     tag = " [milestone]" if log.milestone else ""
     return f"{log.dateTime.date()}{tag}: {log.chatTranscript} | metrics={log.payload}"
@@ -43,7 +38,6 @@ def renderLog(log: dailyLogEntry) -> str:
 
 # Folds several logs' prose into a short factual summary with one LLM call. The
 # structured metrics are preserved separately, so only the verbose narrative is lost.
-# In plain English: squashes many old notes into a couple of sentences about the trend.
 def summarizeLogs(logs: List[dailyLogEntry]) -> str:
     joined = "\n".join(renderLog(l) for l in logs)
     prompt = (
@@ -52,8 +46,6 @@ def summarizeLogs(logs: List[dailyLogEntry]) -> str:
     )
     # Retry a few times on transient errors (Gemini 503 spikes), then fall back to a
     # trivial extractive summary so a live demo never crashes on a bad moment.
-    # In plain English: try a few times if the AI is busy; if it stays down, still
-    # produce a basic summary instead of breaking.
     for attempt in range(3):
         try:
             response = geminiClient.models.generate_content(model="gemini-2.5-flash", contents=prompt)
@@ -66,8 +58,6 @@ def summarizeLogs(logs: List[dailyLogEntry]) -> str:
 # Compacts an experiment's history: milestones and the most recent `keepRecent` logs stay
 # raw, the rest have their prose summarized while their metrics are preserved exactly.
 # Non-destructive (Redis is untouched); returns the token savings and compressed context.
-# In plain English: keeps the important and recent notes as-is, summarizes the boring
-# middle, keeps all the numbers, and reports how many tokens we saved.
 def compactExperiment(expId: str, keepRecent: int = 3) -> dict:
     logs = store.getLogs(expId)
     recentCutoff = len(logs) - keepRecent
@@ -103,8 +93,6 @@ def compactExperiment(expId: str, keepRecent: int = 3) -> dict:
     }
 
 
-# Runs compaction and formats the result into a clean, demo-ready report string.
-# In plain English: produces the neat "here's how many tokens we saved" summary to show.
 def compactionReport(expId: str, keepRecent: int = 3) -> str:
     r = compactExperiment(expId, keepRecent)
     saved = r["tokensBefore"] - r["tokensAfter"]
@@ -124,15 +112,11 @@ def compactionReport(expId: str, keepRecent: int = 3) -> str:
 # A single decision the committee would make from an experiment's history: whether to
 # continue, adjust, or stop, plus a one-line reason. Constrained so the A/B test compares
 # a clean categorical verdict rather than free prose.
-# In plain English: the yes/tweak/stop call we ask the AI to make, so we can check if it
-# answers the same way on full vs compressed history.
 class DecisionVerdict(BaseModel):
     recommendation: Literal["continue", "adjust", "stop"]
     reason: str
 
 
-# Asks the LLM for a DecisionVerdict given a context string of experiment history.
-# In plain English: hands the AI the history and asks it to make the call.
 def askVerdict(context: str) -> DecisionVerdict:
     client = instructor.from_provider("google/gemini-2.5-flash", api_key=os.getenv("GEMINI_API_KEY"))
     return client.create(
@@ -153,8 +137,6 @@ def askVerdict(context: str) -> DecisionVerdict:
 # The quality-preservation proof for the Token Company track: run the same decision on the
 # FULL history and on the COMPRESSED context, and check the verdict is unchanged. If they
 # agree, we preserved decision quality while spending far fewer tokens.
-# In plain English: prove the AI makes the same call on the short version as the long one,
-# so the compression didn't lose anything that mattered.
 def evaluateQuality(expId: str, keepRecent: int = 3) -> dict:
     logs = store.getLogs(expId)
     fullContext = "\n".join(renderLog(l) for l in logs)

@@ -26,7 +26,6 @@ protocolPath = f"protocols/{experimentId}-rules.json"
 # have produced for this scenario, but typed out so no model call is needed.
 # The metricKeys here are what daily logs get scored against, and the incompatibilities
 # map is what the clash check uses, so logs you add will actually exercise both gates.
-# In plain English: the experiment's rulebook, written by hand so seeding is free.
 MOCK_PROTOCOL = {
     "protocol": "Isolating Prescription Retinol 1% irritation bounds",
     "homeostasis_lockout_days": 2,
@@ -54,7 +53,6 @@ MOCK_PROTOCOL = {
 
 # Assembles the in-memory Experiment record, reusing the real variable-triad models so
 # the stored document matches the exact shape a compiled experiment would have.
-# In plain English: builds the fake-but-correctly-shaped experiment we save to Redis.
 def buildMockExperiment() -> Experiment:
     return Experiment(
         expId=experimentId,
@@ -82,8 +80,6 @@ def buildMockExperiment() -> Experiment:
 # tightness > 7) and never combines the clashing actives, so they all pass clean — the
 # point is to give the Council/arbiter and the Researcher real context to react to,
 # while leaving the actual warning for the 1-2 logs you add live.
-# In plain English: a believable week of "so far so good" entries, escalating gently, so
-# when you add a hot day next the warning lands against a real backstory.
 def buildMockLogs() -> list:
     # (daysAgo, redness, tightness, what the user "wrote")
     timeline = [
@@ -110,7 +106,6 @@ def buildMockLogs() -> list:
 # Plants the mock setup: persist the Experiment header, cache the compiled protocol in
 # Redis, and mirror it to protocols/<expId>-rules.json so the on-disk folder matches.
 # Leaves the log list empty on purpose — adding logs is the one step left for the user.
-# In plain English: load the ready-made experiment into the database and stop there.
 def main():
     print(f"Redis ping: {store.ping()}")
 
@@ -125,14 +120,22 @@ def main():
     with open(protocolPath, "w") as f:
         f.write(protocolJson)
 
+    # replaceLogs (atomic overwrite) instead of appendLog, so re-running the seeder
+    # resets to exactly this history rather than stacking duplicates.
+    logs = buildMockLogs()
+    store.replaceLogs(experimentId, logs)
+
     print(f"\nSeeded mock experiment '{experimentId}' (no LLM calls).")
     print(f"  protocol      : {exp.protocol}")
     print(f"  cached rules  : {protocolPath}")
     print(f"  tracked metrics: {[t['metricKey'] for t in MOCK_PROTOCOL['thresholds']]}")
-    print(f"  log count     : {len(exp.logs)}")
-    print("\nReady. Add a couple of daily logs via the UI journal, or:")
+    print(f"  seeded logs   : {len(logs)} (all clean, redness 2->6 over the last 5 days)")
+    print("\nReady. Now add 1-2 live logs to demo the warning + research, e.g.:")
     print('  from runtime import runTick')
-    print(f'  runTick("{experimentId}", "Applied retinol around 10pm, skin a bit red, maybe a 4.")')
+    print(f'  # crosses redness > 8 -> safety gate blocks + Council de-escalates:')
+    print(f'  runTick("{experimentId}", "Skin is on fire tonight, angry red all over, easily a 9. Really tight and burning.")')
+    print(f'  # or a clash -> stacked retinol with a peeling acid:')
+    print(f'  runTick("{experimentId}", "Used my retinol AND a peeling acid together tonight to speed things up.")')
 
 
 if __name__ == "__main__":

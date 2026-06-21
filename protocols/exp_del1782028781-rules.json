@@ -1,0 +1,6 @@
+{
+  "protocol": "test delete",
+  "homeostasis_lockout_days": 0,
+  "incompatibilities": {},
+  "thresholds": []
+}

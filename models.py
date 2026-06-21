@@ -49,7 +49,6 @@ class ProtocolViolationException(Exception):
 
 # One step in the Master orchestrator's run, recorded for the UI trace ledger:
 # which sub-step ran, how long it took, and a short human-readable result line.
-# In plain English: a single line in the "what the engine did" timeline shown on screen.
 class TraceStage(BaseModel):
     agent: str               # name of the step, e.g. "ingest" or "safety"
     durationMs: float        # how long this step took, in milliseconds
@@ -58,7 +57,6 @@ class TraceStage(BaseModel):
 
 # The full envelope the Master orchestrator returns for one log. The frontend reads
 # 'verdict' + 'violations' for the warning banner and 'stages' for the trace ledger.
-# In plain English: the single result object the UI needs to draw everything for one entry.
 class PipelineTrace(BaseModel):
     expId: str
     timestamp: str                              # ISO timestamp of the run
@@ -70,8 +68,6 @@ class PipelineTrace(BaseModel):
     # Council outputs (added after the deterministic gate). councilVerdict is the arbiter's
     # continue/adjust/stop call (distinct from verdict above, which is ok/blocked); the
     # de-escalation fields are populated only when blocked.
-    # In plain English: the committee's take — keep going / tweak / stop, plus a kind
-    # explanation and recovery steps if the entry got blocked.
     councilVerdict: Optional[str] = None
     deEscalationMessage: Optional[str] = None
     recoverySteps: List[str] = Field(default_factory=list)

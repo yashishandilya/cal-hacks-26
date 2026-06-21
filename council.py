@@ -20,7 +20,7 @@ geminiClient = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 # Domains we count as academic/peer-reviewed: literature indexes, journal publishers, and
 # university (.edu / .ac.) sites. The grounding chunk's title is the source domain (e.g.
 # "ncbi.nlm.nih.gov"), so a substring check against this list filters out blogs and
-# product/marketing pages. In plain English: the allow-list of "real research" websites.
+# product/marketing pages.
 ACADEMIC_DOMAINS = (
     "ncbi.nlm.nih.gov", "pubmed", "pmc", "doi.org", ".edu", ".ac.", "nature.com",
     "sciencedirect", "springer", "wiley", "onlinelibrary", "tandfonline", "sagepub",
@@ -30,8 +30,6 @@ ACADEMIC_DOMAINS = (
 )
 
 
-# True if a grounded source looks academic (its domain matches the allow-list above).
-# In plain English: decides whether a cited link is from real research, not a blog or shop.
 def isAcademicSource(title: str, url: str) -> bool:
     haystack = f"{title or ''} {url or ''}".lower()
     return any(domain in haystack for domain in ACADEMIC_DOMAINS)
@@ -39,8 +37,6 @@ def isAcademicSource(title: str, url: str) -> bool:
 
 # Researches an experiment topic with Gemini's Google Search grounding, returning a short
 # findings summary plus only the peer-reviewed/academic sources Gemini cited (title + url).
-# In plain English: searches scientific literature for real and hands back what it found
-# plus the research links (filtering out blogs and product pages).
 def researchTopic(query: str) -> dict:
     prompt = (
         "Research this experiment topic using ONLY peer-reviewed academic and scientific "
@@ -60,7 +56,6 @@ def researchTopic(query: str) -> dict:
 
     # Pull cited sources from the grounding metadata, then keep only academic ones. Guards
     # for when Gemini returns no grounding at all (then we keep findings + an empty list).
-    # In plain English: dig out the links it used and drop anything that isn't real research.
     sources: List[dict] = []
     candidate = response.candidates[0] if response.candidates else None
     metadata = getattr(candidate, "grounding_metadata", None) if candidate else None
@@ -76,7 +71,6 @@ def researchTopic(query: str) -> dict:
 
 # The De-escalator's output: a calm, plain-language explanation of what tripped and a
 # few concrete recovery steps. Maps to the UI's red "De-escalator triggered" flag box.
-# In plain English: a reassuring note about what went wrong and what to do about it.
 class DeEscalation(BaseModel):
     message: str               # calm explanation of what happened and why it matters
     recoverySteps: List[str]   # 2-4 concrete steps to recover safely
@@ -84,8 +78,6 @@ class DeEscalation(BaseModel):
 
 # Given the safety violations (and optional context), produces a supportive de-escalation
 # instead of a raw error. Runs only after the deterministic gate has already blocked.
-# In plain English: when something unsafe is caught, this explains it kindly and says how
-# to recover, rather than just throwing a scary error.
 def deEscalate(violations: List[str], context: str = "") -> DeEscalation:
     client = instructor.from_provider("google/gemini-2.5-flash", api_key=os.getenv("GEMINI_API_KEY"))
     joined = "; ".join(violations)

@@ -12,7 +12,6 @@ from phoenix.otel import register
 
 # Phoenix prints an emoji banner on launch; the Windows console (cp1252) can't encode it
 # and crashes. Force stdout/stderr to UTF-8 so the launch never dies on the banner.
-# In plain English: stop Windows from choking on Phoenix's emoji startup message.
 try:
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
@@ -24,7 +23,6 @@ _started = False
 
 # Launches the local Phoenix UI and wires OpenTelemetry auto-instrumentation so all
 # Gemini/instructor calls are captured as spans. Idempotent: safe to call more than once.
-# In plain English: turns on the live dashboard that records what every agent did.
 def startTracing():
     global _started
     if _started:
@@ -33,8 +31,6 @@ def startTracing():
     # auto_instrument is off: the openinference google-genai instrumentor is incompatible
     # with our google-genai version. We emit our own spans (see runtime.py) instead, which
     # also gives a cleaner tick -> ingest/safety/council trace tree.
-    # In plain English: we hand-label the agent steps ourselves instead of relying on a
-    # broken auto-tracer.
     register(project_name="the-experimenter", auto_instrument=False)
     _started = True
     print("[tracing] Phoenix live at http://localhost:6006")
@@ -43,8 +39,6 @@ def startTracing():
 # Fetches recent traces for one experiment from Phoenix: each runTick root span carries
 # the expId, and its child spans (ingest/safety/council) share the trace_id. Returns the
 # most recent traces with their spans + per-span latency for the in-app trace panel.
-# In plain English: pull this experiment's trace history out of Phoenix so the UI can show
-# what each entry's agents did and how long they took.
 def getExperimentTraces(expId: str, limit: int = 10) -> list:
     import pandas as pd
     from phoenix.client import Client
