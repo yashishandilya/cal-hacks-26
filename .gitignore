@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 MEMORY.md
 *.log
+TECHNICAL_REPORT.md
+*.claude
